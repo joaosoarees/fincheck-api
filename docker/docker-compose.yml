@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:12.4
+    container_name: fincheck_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/backup:/backup
+    networks:
+      - fincheck
+    environment:
+      - POSTGRES_DB=fincheck
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+networks:
+  fincheck:
+    driver: bridge
