@@ -6,7 +6,7 @@ import {
 import { compare, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
-import { AuthenticateDto } from './dto/authenticate.dto';
+import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 
 import { UsersRepository } from 'src/shared/database/repositories/users.repositories';
@@ -18,7 +18,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async authenticate({ email, password }: AuthenticateDto) {
+  private async generateAccessToken(userId: string) {
+    return this.jwtService.signAsync({ sub: userId });
+  }
+
+  async signin({ email, password }: SigninDto) {
     const user = await this.usersRepository.findUnique({
       where: { email },
     });
@@ -30,7 +34,7 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials.');
 
-    const accessToken = await this.jwtService.signAsync({ sub: user.id });
+    const accessToken = await this.generateAccessToken(user.id);
 
     return { accessToken };
   }
@@ -75,9 +79,8 @@ export class AuthService {
       },
     });
 
-    return {
-      name: user.name,
-      email: user.email,
-    };
+    const accessToken = await this.generateAccessToken(user.id);
+
+    return { accessToken };
   }
 }
